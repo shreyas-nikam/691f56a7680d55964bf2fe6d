@@ -1,7 +1,8 @@
+
 streamlit
 numpy
 pandas
 plotly
-scikit-learn
 matplotlib
 scipy
+scikit-learn
