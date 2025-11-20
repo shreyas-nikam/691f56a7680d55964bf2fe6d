@@ -1,4 +1,4 @@
-
+"""application_pages/page1.py"""
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -6,10 +6,13 @@ import plotly.express as px
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-def run_page():
-    st.markdown("## K-Means Clustering")
+def run_page1():
+    current_data = st.session_state.current_data
+    data_name = st.session_state.data_name
+
+    st.markdown("## 4. K-Means Clustering: Theory")
     st.markdown("""
-k-Means clustering is a partition-based algorithm that aims to partition $n$ observations into $k$ clusters, where each observation belongs to the cluster with the nearest mean (centroid). The algorithm iteratively assigns data points to clusters and updates cluster centroids until convergence.
+    k-Means clustering is a partition-based algorithm that aims to partition $n$ observations into $k$ clusters, where each observation belongs to the cluster with the nearest mean (centroid). The algorithm iteratively assigns data points to clusters and updates cluster centroids until convergence.
 
     The objective function, often called the inertia, that k-Means aims to minimize is the sum of squared distances of samples to their closest cluster center:
     $$ J = \sum_{i=0}^{n}\min_{\mu_j \in C}(||x_i - \mu_j||^2) $$
@@ -23,26 +26,23 @@ k-Means clustering is a partition-based algorithm that aims to partition $n$ obs
     """)
 
     def run_kmeans(data, n_clusters, random_state=42):
-        """Runs K-Means clustering."""
+        """Docstring: Runs K-Means clustering."""
         kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init='auto')
         kmeans.fit(data)
         return kmeans.labels_, kmeans.cluster_centers_
 
     st.markdown("""
-The `run_kmeans` function encapsulates the k-Means algorithm, allowing us to easily apply it with different parameters. This abstraction simplifies the process of exploring various cluster configurations and their impact on data segmentation.
-""")
+    The `run_kmeans` function encapsulates the k-Means algorithm, allowing us to easily apply it with different parameters. This abstraction simplifies the process of exploring various cluster configurations and their impact on data segmentation.
+    """)
 
-    st.markdown("### Interactive Parameter Tuning and Evaluation")
+    st.markdown("## 5. K-Means Clustering: Interactive Parameter Tuning and Evaluation")
     st.markdown("""
-The choice of the number of clusters, $k$, is critical for k-Means. We can evaluate the quality of clustering using metrics like the Silhouette Score. A higher Silhouette Score generally indicates better-defined clusters, where data points are well-matched to their own cluster and poorly matched to neighboring clusters. The Silhouette Coefficient $s(i)$ for a single sample is calculated as:
+    The choice of the number of clusters, $k$, is critical for k-Means. We can evaluate the quality of clustering using metrics like the Silhouette Score. A higher Silhouette Score generally indicates better-defined clusters, where data points are well-matched to their own cluster and poorly matched to neighboring clusters. The Silhouette Coefficient $s(i)$ for a single sample is calculated as:
     $$ s(i) = \frac{b(i) - a(i)}{\max(a(i), b(i))} $$
     where $a(i)$ is the mean distance between $i$ and all other data points in the same cluster, and $b(i)$ is the mean distance between $i$ and all other data points in the *next nearest* cluster.
 
     We can interactively adjust $k$ and observe its impact on the clusters and the Silhouette Score. This helps in finding an optimal $k$ that balances clustering quality with business interpretability.
     """)
-
-    current_data = st.session_state.current_data
-    data_name = st.session_state.data_name
 
     if current_data is not None:
         if current_data.shape[1] < 2:
@@ -76,8 +76,8 @@ The choice of the number of clusters, $k$, is critical for k-Means. We can evalu
             st.plotly_chart(fig_kmeans, use_container_width=True)
 
             st.markdown("""
-The scatter plot visually represents the distinct clusters identified by the k-Means algorithm. Each color corresponds to a different cluster, and the black 'x' markers indicate the calculated centroids. In a financial context, these clusters could represent different types of stocks (e.g., growth stocks, value stocks, defensive stocks), aiding in diversified portfolio construction by selecting assets from different segments.
+            The scatter plot visually represents the distinct clusters identified by the k-Means algorithm. Each color corresponds to a different cluster, and the black 'x' markers indicate the calculated centroids. In a financial context, these clusters could represent different types of stocks (e.g., growth stocks, value stocks, defensive stocks), aiding in diversified portfolio construction by selecting assets from different segments.
             By adjusting the slider, you can observe how the cluster boundaries and assignments change. The Silhouette Score provides a quantitative measure of clustering quality, helping to identify a suitable number of clusters for the given dataset.
-""")
+            """)
     else:
         st.info("Please select a data source from the sidebar to run K-Means clustering.")
