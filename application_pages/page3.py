@@ -1,4 +1,5 @@
-"""application_pages/page3.py"""
+"""Python file for Agglomerative Hierarchical Clustering page."""
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -9,12 +10,9 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics import silhouette_score
 
 def run_page3():
-    current_data = st.session_state.current_data
-    data_name = st.session_state.data_name
-
     st.markdown("## 11. Agglomerative Hierarchical Clustering: Theory")
     st.markdown("""
-    Agglomerative Hierarchical Clustering builds a hierarchy of clusters from individual data points. It is a \"bottom-up\" approach, where each data point starts as its own cluster, and then pairs of clusters are iteratively merged based on their proximity until all points belong to a single cluster or a desired number of clusters is reached. This process forms a tree-like structure called a dendrogram.
+    Agglomerative Hierarchical Clustering builds a hierarchy of clusters from individual data points. It is a "bottom-up" approach, where each data point starts as its own cluster, and then pairs of clusters are iteratively merged based on their proximity until all points belong to a single cluster or a desired number of clusters is reached. This process forms a tree-like structure called a dendrogram.
 
     Key concepts include:
     -   **Distance Metric**: How the distance between individual data points is measured (e.g., Euclidean, Manhattan, Cosine). This defines the proximity between any two data points.
@@ -31,7 +29,7 @@ def run_page3():
     """)
 
     def run_hierarchical_clustering(data, n_clusters, linkage_method, affinity_metric):
-        """Docstring: Runs Agglomerative Hierarchical Clustering."""
+        """Runs Agglomerative Hierarchical Clustering."""
         agg_clustering = AgglomerativeClustering(
             n_clusters=n_clusters,
             linkage=linkage_method,
@@ -41,7 +39,9 @@ def run_page3():
         return cluster_labels
 
     def plot_dendrogram(data, linkage_matrix, n_clusters_display=None, title="Hierarchical Clustering Dendrogram"):
-        """Docstring: Generates and displays an interactive dendrogram using Matplotlib."""
+        """
+        Generates and displays an interactive dendrogram using Matplotlib.
+        """
         if not isinstance(data, np.ndarray):
             raise TypeError("Input 'data' must be a numpy array.")
         
@@ -113,6 +113,9 @@ def run_page3():
     The power of hierarchical clustering lies in exploring different linkage methods and distance metrics. We can interactively adjust these parameters along with the desired number of clusters ($k$) to understand their impact on the clustering structure and the Silhouette Score. This interactivity allows for a nuanced understanding of how different assumptions about 'similarity' affect the resulting financial market segments.
     """)
 
+    current_data = st.session_state.get('current_data')
+    data_name = st.session_state.get('data_name', "Current Data")
+
     if current_data is not None:
         if current_data.shape[1] < 2:
             st.warning("Agglomerative Hierarchical clustering requires at least 2 features for 2D visualization. Please upload data with more features or select a demo dataset.")
@@ -148,10 +151,8 @@ def run_page3():
                 fig_agg.update_layout(legend_title_text='Cluster')
                 st.plotly_chart(fig_agg, use_container_width=True)
 
-                st.markdown("""
-                ---
-                ### Dendrogram Visualization
-                """)
+                st.markdown("---")
+                st.markdown("### Dendrogram Visualization")
                 # Compute linkage matrix for dendrogram
                 Z = linkage(current_data, method=linkage_method_agg, metric=affinity_metric_agg)
                 plot_dendrogram(current_data, Z, n_clusters_display=n_clusters_agg, 
