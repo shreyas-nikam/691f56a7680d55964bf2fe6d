@@ -1,4 +1,5 @@
-"""application_pages/page1.py"""
+"""Python file for K-Means Clustering page."""
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -7,9 +8,6 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 def run_page1():
-    current_data = st.session_state.current_data
-    data_name = st.session_state.data_name
-
     st.markdown("## 4. K-Means Clustering: Theory")
     st.markdown("""
     k-Means clustering is a partition-based algorithm that aims to partition $n$ observations into $k$ clusters, where each observation belongs to the cluster with the nearest mean (centroid). The algorithm iteratively assigns data points to clusters and updates cluster centroids until convergence.
@@ -26,7 +24,7 @@ def run_page1():
     """)
 
     def run_kmeans(data, n_clusters, random_state=42):
-        """Docstring: Runs K-Means clustering."""
+        """Runs K-Means clustering."""
         kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init='auto')
         kmeans.fit(data)
         return kmeans.labels_, kmeans.cluster_centers_
@@ -43,6 +41,9 @@ def run_page1():
 
     We can interactively adjust $k$ and observe its impact on the clusters and the Silhouette Score. This helps in finding an optimal $k$ that balances clustering quality with business interpretability.
     """)
+
+    current_data = st.session_state.get('current_data')
+    data_name = st.session_state.get('data_name', "Current Data")
 
     if current_data is not None:
         if current_data.shape[1] < 2:
