@@ -1,4 +1,5 @@
-"""application_pages/page2.py"""
+"""Python file for Spectral Clustering page."""
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -7,9 +8,6 @@ from sklearn.cluster import SpectralClustering
 from sklearn.metrics import silhouette_score
 
 def run_page2():
-    current_data = st.session_state.current_data
-    data_name = st.session_state.data_name
-
     st.markdown("## 8. Spectral Clustering: Theory")
     st.markdown("""
     Spectral Clustering is a technique that uses the eigenvalues (spectrum) of a similarity matrix to perform dimensionality reduction before clustering in a lower-dimensional space. It is particularly effective for discovering non-globular or intertwined clusters by leveraging the graph structure of the data. The process generally follows these steps:
@@ -28,7 +26,9 @@ def run_page2():
     """)
 
     def run_spectral_clustering(data, n_clusters, affinity_kernel, gamma, random_state=42):
-        """Docstring: Executes Spectral Clustering on the given data using sklearn.cluster.SpectralClustering."""
+        """
+        Executes Spectral Clustering on the given data using sklearn.cluster.SpectralClustering.
+        """
         model = SpectralClustering(
             n_clusters=n_clusters,
             affinity=affinity_kernel,
@@ -47,6 +47,9 @@ def run_page2():
     st.markdown("""
     Similar to k-Means, the number of clusters $k$ is an important parameter for Spectral Clustering. Additionally, the `affinity` kernel (how similarity is defined) significantly impacts the clustering results. We can explore these parameters interactively, along with the Silhouette Score, to understand their influence on cluster formation and quality.
     """)
+
+    current_data = st.session_state.get('current_data')
+    data_name = st.session_state.get('data_name', "Current Data")
 
     if current_data is not None:
         if current_data.shape[1] < 2:
@@ -72,7 +75,7 @@ def run_page2():
 
                 title_score_spectral = f'Silhouette Score: {silhouette_avg_spectral:.3f}' if unique_labels_count_spectral > 1 else 'Silhouette Score: N/A'
                 fig_spectral = px.scatter(spectral_df_interactive, x='Feature 1', y='Feature 2', color='Cluster',
-                                        title=f'Spectral Clustering (k={n_clusters_spectral}, Kernel=\"{affinity_kernel_spectral}\") of {data_name}<br>{title_score_spectral}',
+                                        title=f'Spectral Clustering (k={n_clusters_spectral}, Kernel="{affinity_kernel_spectral}") of {data_name}<br>{title_score_spectral}',
                                         hover_data=['Cluster'])
                 fig_spectral.update_layout(legend_title_text='Cluster')
                 st.plotly_chart(fig_spectral, use_container_width=True)
