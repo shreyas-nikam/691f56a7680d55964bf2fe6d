@@ -1,16 +1,16 @@
-
+"""app.py"""
 import streamlit as st
 import numpy as np
 import pandas as pd
-import plotly.express as px # Needed for current_data plots in pages
-import matplotlib.pyplot as plt # Needed for dendrogram in page 3
+import plotly.express as px
+import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import dendrogram, linkage
 
 # Scikit-learn imports
 from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import make_blobs, make_circles
 from sklearn.metrics import silhouette_score
-from scipy.cluster.hierarchy import dendrogram, linkage
 
 # Suppress warnings for cleaner output
 import warnings
@@ -22,7 +22,8 @@ st.sidebar.divider()
 st.title("QuLab")
 st.divider()
 st.markdown("""
-This Streamlit application provides an interactive platform for exploring and understanding various unsupervised clustering techniques. Unsupervised learning is a powerful paradigm in machine learning that aims to discover hidden patterns or intrinsic structures in unlabeled data. In financial markets, this can be invaluable for tasks such as market segmentation, identifying correlated assets, or constructing diversified portfolios.
+In this lab, we explore and understand various unsupervised clustering techniques, specifically k-Means, Spectral, and Agglomerative Hierarchical Clustering.
+Unsupervised learning is a powerful paradigm in machine learning that aims to discover hidden patterns or intrinsic structures in unlabeled data. In financial markets, this can be invaluable for tasks such as market segmentation, identifying correlated assets, or constructing diversified portfolios.
 
 ### Learning Goals
 Upon completion of this application, users will be able to:
@@ -32,14 +33,14 @@ Upon completion of this application, users will be able to:
 - Gain insights into how clustering can be applied for tasks such as financial market segmentation or portfolio construction, with specific demonstrations using synthetic financial data.
 """)
 
-st.markdown("## Setting Up the Environment and Data Utilities")
+# 2. Setting Up the Environment and Data Utilities
+st.markdown("## 2. Setting Up the Environment and Data Utilities")
 st.markdown("""
 We begin by defining utility functions for generating our synthetic financial datasets and for preprocessing them. These functions ensure that our data is in a suitable format for clustering algorithms and allow for easy experimentation with different datasets.
 """)
 
 def load_synthetic_financial_data(dataset_type):
-    """
-    Generates and returns a synthetic financial dataset based on the specified type.
+    """Docstring: Generates and returns a synthetic financial dataset based on the specified type.
     
     Arguments:
         dataset_type (str): A string indicating the type of synthetic dataset to generate
@@ -62,9 +63,8 @@ def load_synthetic_financial_data(dataset_type):
     else:
         raise ValueError(f"Unsupported dataset_type: '{dataset_type}'.")
 
-def preprocess_data(data: (np.ndarray | pd.DataFrame)) -> np.ndarray:
-    """
-    Applies StandardScaler from sklearn.preprocessing to the input data, ensuring all features are
+def preprocess_data(data):
+    """Docstring: Applies StandardScaler from sklearn.preprocessing to the input data, ensuring all features are
     scaled to a standard range. This preprocessing step is crucial for distance-based clustering
     algorithms to prevent features with larger ranges from dominating the distance calculations.
 
@@ -106,54 +106,52 @@ data_source_option = st.sidebar.radio(
     ("K-Means Portfolio Data (Demo)", "Spectral Assets Data (Demo)", "Upload Your Own Data")
 )
 
-# Initialize current_data and data_name in session_state
-if 'current_data' not in st.session_state:
-    st.session_state.current_data = None
-if 'data_name' not in st.session_state:
-    st.session_state.data_name = ""
+current_data = None
+data_name = ""
 
 if data_source_option == "K-Means Portfolio Data (Demo)":
-    st.session_state.current_data = st.session_state.scaled_kmeans_data
-    st.session_state.data_name = "K-Means Portfolio Data"
-    st.sidebar.info(f"Loaded {st.session_state.data_name} with shape: {st.session_state.current_data.shape}")
+    current_data = st.session_state.scaled_kmeans_data
+    data_name = "K-Means Portfolio Data"
+    st.sidebar.info(f"Loaded {data_name} with shape: {current_data.shape}")
 elif data_source_option == "Spectral Assets Data (Demo)":
-    st.session_state.current_data = st.session_state.scaled_spectral_data
-    st.session_state.data_name = "Spectral Assets Data"
-    st.sidebar.info(f"Loaded {st.session_state.data_name} with shape: {st.session_state.current_data.shape}")
+    current_data = st.session_state.scaled_spectral_data
+    data_name = "Spectral Assets Data"
+    st.sidebar.info(f"Loaded {data_name} with shape: {current_data.shape}")
 elif data_source_option == "Upload Your Own Data":
     uploaded_file = st.sidebar.file_uploader("Upload CSV file", type=["csv"])
     if uploaded_file is not None:
         try:
             st.session_state.user_data_df = pd.read_csv(uploaded_file)
             st.session_state.scaled_user_data = preprocess_data(st.session_state.user_data_df.values)
-            st.session_state.current_data = st.session_state.scaled_user_data
-            st.session_state.data_name = "Uploaded User Data"
+            current_data = st.session_state.scaled_user_data
+            data_name = "Uploaded User Data"
             st.sidebar.success("CSV file successfully uploaded and preprocessed!")
-            st.sidebar.info(f"Loaded {st.session_state.data_name} with shape: {st.session_state.current_data.shape}")
+            st.sidebar.info(f"Loaded {data_name} with shape: {current_data.shape}")
         except Exception as e:
             st.sidebar.error(f"Error processing uploaded file: {e}")
-            st.session_state.current_data = None
-            st.session_state.data_name = ""
+            current_data = None
     else:
         st.session_state.user_data_df = None
         st.session_state.scaled_user_data = None
-        st.session_state.current_data = None # Ensure no data is selected if no file is uploaded
-        st.session_state.data_name = ""
+        current_data = None # Ensure no data is selected if no file is uploaded
         st.sidebar.warning("Please upload a CSV file for analysis.")
 
-# Fallback if current_data is None (e.g., initial state of user upload)
-if st.session_state.current_data is None:
-    st.warning("Please select a data source or upload a valid CSV to proceed with clustering.")
-    
-st.sidebar.divider()
-page = st.sidebar.selectbox(label="Navigation", options=["K-Means Clustering", "Spectral Clustering", "Agglomerative Hierarchical Clustering"])
+st.session_state.current_data = current_data
+st.session_state.data_name = data_name
 
+# Fallback if current_data is None (e.g., initial state of user upload)
+if current_data is None:
+    st.warning("Please select a data source or upload a valid CSV to proceed with clustering.")
+
+# Your code starts here
+page = st.sidebar.selectbox(label="Navigation", options=["K-Means Clustering", "Spectral Clustering", "Agglomerative Hierarchical Clustering"])
 if page == "K-Means Clustering":
-    from application_pages.page1 import run_page
-    run_page()
+    from application_pages.page1 import run_page1
+    run_page1()
 elif page == "Spectral Clustering":
-    from application_pages.page2 import run_page
-    run_page()
+    from application_pages.page2 import run_page2
+    run_page2()
 elif page == "Agglomerative Hierarchical Clustering":
-    from application_pages.page3 import run_page
-    run_page()
+    from application_pages.page3 import run_page3
+    run_page3()
+# Your code ends
